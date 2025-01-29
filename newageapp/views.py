@@ -13,11 +13,9 @@ def user_create(request):
             return redirect('create-user')
     else:
         form = UserForm()
-    context ={"form":form}
-    return render(request, 'user_form.html',context)
+    return render(request, 'user_form.html',{"form":form})
 
-def index(request):
-    return render(request, "user_form.html")
+
 
 
 
