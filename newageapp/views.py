@@ -15,6 +15,6 @@ def user_create(request):
         form = UserForm()
     return render(request, 'user_form.html',{"form":form})
 
-
-
+def bah(request):
+return "jsvj"
    
