@@ -14,9 +14,8 @@ def user_create(request):
     else:
         form = UserForm()
     return render(request, 'user_form.html',{"form":form})
-
-
-
+def index(request):
+return "hello"
 
 
    
