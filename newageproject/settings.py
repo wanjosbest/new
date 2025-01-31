@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'newageapp',
     'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'django.contrib.sites',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +56,21 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_FRAMEWORK = {
+    'AUTHENTICATION_CLASSES': (
+        'newageapp.authentication.JWTauthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+      'PERMISSION_CLASSES': (
+
+        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
+
+   ),
+     
+}
 
 ROOT_URLCONF = 'newageproject.urls'
 
