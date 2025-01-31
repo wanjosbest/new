@@ -1,19 +1,18 @@
-from pymongo import MongoClient
-from urllib.parse import quote_plus
-"""
-# Your MongoDB username and password
-username = "wanjos"
-password = "0903620Wanjos@#$"
 
-# URL-encode the username and password
-encoded_username = quote_plus(username)
-encoded_password = quote_plus(password)
-"""
-# Replace with your MongoDB connection string
-CONNECTION_STRING = "mongodb+srv://wanjos:0903620Wanjos@newagedatabase.40ybp.mongodb.net/?retryWrites=true&w=majority&appName=newagedatabase"
-# Connect to the MongoDB cluster
-client = MongoClient(CONNECTION_STRING,ssl=False)
 
-# Access the specific database and collection
+
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+uri = "mongodb+srv://wanjos:0903620Wanjos@newagedatabase.40ybp.mongodb.net/?retryWrites=true&w=majority&appName=newagedatabase"
+
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['newageadatabase']  # Database name
 users_collection = db['users']  # Collection name
+# Send a ping to confirm a successful connection
+try:
+    client.admin.command('ping')
+    print("Pinged your deployment. You successfully connected to MongoDB!")
+except Exception as e:
+    print(e)
