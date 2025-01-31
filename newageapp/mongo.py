@@ -10,6 +10,7 @@ uri = "mongodb+srv://wanjos:0903620Wanjos@newagedatabase.40ybp.mongodb.net/?retr
 client = MongoClient(uri, server_api=ServerApi('1'))
 db = client['newageadatabase']  # Database name
 users_collection = db['users']  # Collection name
+courses_collection = db['courses']
 # Send a ping to confirm a successful connection
 try:
     client.admin.command('ping')
