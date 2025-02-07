@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-class Userregister(serializers.Serializer):
+class Studentregister(serializers.Serializer):
     firstname =serializers.CharField(max_length=50,)
     lastname =serializers.CharField(max_length=50,)
     username =serializers.CharField(max_length=50)
@@ -12,10 +12,9 @@ class Userregister(serializers.Serializer):
     dob = serializers.CharField(max_length=50, required = True)
     phonenumber = serializers.CharField(max_length=50, required = True)
     gender = serializers.CharField(max_length=50, required = True)
-    agreed_termsconditions = serializers.CharField(max_length=50, required = True)
 
     def create(self, validated_data):
-        user = super(Userregister, self).create(validated_data)
+        user = super(Studentregister, self).create(validated_data)
         user.set_password(validated_data["password"])
         user.save()
         return user
