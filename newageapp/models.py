@@ -3,6 +3,9 @@ from datetime import datetime
 
 # define all the collections here
 student_collection = db["student"]
+tutor_collection = db["tutor"]
+admin_collection = db["admin"]
+affiliate_collection = db["affiliate"]
 available_courses_collection = db['available_courses']
 course_modules_collection = db['course_modules']
 live_classes_collection = db['live_classes']
@@ -17,7 +20,9 @@ referrals_collection = db['referrals']
 referral_trackers_collection = db['referral_trackers']
 promoted_courses_collection = db['promoted_courses']
 
-class Student:
+# Admin
+
+class Admin:
     def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
 
         self.firstname = firstname
@@ -31,6 +36,117 @@ class Student:
         self.phonenumber = phonenumber
         self.gender = gender
         self.created_on = datetime.now()
+        self.is_admin = True
+
+    def save(self):
+        admin_collection.insert_one(
+            {
+                "firstname":self.firstname,
+                "lastname": self.lastname,
+                "username": self.username,
+                "email": self.email,
+                "password": self.password,
+                "course":self.course,
+                "created_on":self.created_on,
+                "is_admin": self.is_admin
+            }
+        )
+    
+    # get admin by id
+
+    @staticmethod
+    def get_admin(id):
+        return admin_collection.find_one({
+            "_id": ObjectId(id)
+        })
+
+# update admin
+    @staticmethod 
+    def update_admin(id, firstname, lastname, username, email, password):
+        admin_collection.update_one({"_id": ObjectId(id)}, {"$set":{"firstname":firstname, "lastname":lastname,"email":email, "username":username,"password":password, "address":address, "phonenumber":phonenumber,"gender":gender, "dob":dob}})
+
+# delete admin
+    @staticmethod
+    def delete_admin(id):
+        admin_collection.delete_one({"_id": ObjectId(id)})
+    
+#get all admin
+@staticmethod
+def get_all_admin():
+    results = admin_collection.find()
+    return list(results)
+
+
+# affiliate
+
+class affiliate:
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
+
+        self.firstname = firstname
+        self.lastname = lastname
+        self.username = username
+        self.email = email
+        self.password = password
+        self.course = course
+        self.address = address
+        self.dob = dob
+        self.phonenumber = phonenumber
+        self.gender = gender
+        self.created_on = datetime.now()
+        self.is_affiliate = True
+
+    def save(self):
+        affiliate_collection.insert_one(
+            {
+                "firstname":self.firstname,
+                "lastname": self.lastname,
+                "username": self.username,
+                "email": self.email,
+                "password": self.password,
+                "course":self.course,
+                "created_on":self.created_on,
+                "is_affiliate": self.is_affiliate
+            }
+        )
+    
+    # get affiliate by id
+
+    @staticmethod
+    def get_affiliate(id):
+        return affiliate_collection.find_one({
+            "_id": ObjectId(id)
+        })
+
+# update affiliate
+    @staticmethod 
+    def update_affiliate(id, firstname, lastname, username, email, password):
+        affiliate_collection.update_one({"_id": ObjectId(id)}, {"$set":{"firstname":firstname, "lastname":lastname,"email":email, "username":username,"password":password, "address":address, "phonenumber":phonenumber,"gender":gender, "dob":dob}})
+
+# delete affiliate
+    @staticmethod
+    def delete_affiliate(id):
+        affiliate_collection.delete_one({"_id": ObjectId(id)})
+    
+#get all affiliate
+@staticmethod
+def get_all_affiliate():
+    results = affiliate_collection.find()
+    return list(results)
+
+class Student:
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
+        self.firstname = firstname
+        self.lastname = lastname
+        self.username = username
+        self.email = email
+        self.password = password
+        self.course = course
+        self.address = address
+        self.dob = dob
+        self.phonenumber = phonenumber
+        self.gender = gender
+        self.created_on = datetime.now()
+        self.is_student = True
 
     def save(self):
         student_collection.insert_one(
@@ -40,7 +156,9 @@ class Student:
                 "username": self.username,
                 "email": self.email,
                 "password": self.password,
-                "course":self.course
+                "course":self.course,
+                "created_on":self.created_on,
+                "is_student": self.is_student
             }
         )
     
@@ -48,25 +166,82 @@ class Student:
 
     @staticmethod
     def get_student(id):
-        return users_collection.find_one({
+        return student_collection.find_one({
             "_id": ObjectId(id)
         })
 
 # update user
-    @staticmethod
+    @staticmethod 
     def update_student(id, firstname, lastname, username, email, password):
-        users_collection.update_one({"_id": ObjectId(id)}, {"$set":{"firstname":firstname, "lastname":lastname,"email":email, "username":username,"password":password, "address":address, "phonenumber":phonenumber,"gender":gender, "dob":dob}})
+        student_collection.update_one({"_id": ObjectId(id)}, {"$set":{"firstname":firstname, "lastname":lastname,"email":email, "username":username,"password":password, "address":address, "phonenumber":phonenumber,"gender":gender, "dob":dob}})
 
 # delete user
     @staticmethod
     def delete_student(id):
-        users_collection.delete_one({"_id": ObjectId(id)})
+        student_collection.delete_one({"_id": ObjectId(id)})
     
 #get all users
 @staticmethod
 def get_all_students():
-    results = users_collection.find()
+    results = student_collection.find()
     return list(results)
+
+class Tutor:
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
+
+        self.firstname = firstname
+        self.lastname = lastname
+        self.username = username
+        self.email = email
+        self.password = password
+        self.course = course
+        self.address = address
+        self.dob = dob
+        self.phonenumber = phonenumber
+        self.gender = gender
+        self.created_on = datetime.now()
+        self.is_tutor = True
+
+    def save(self):
+        tutor_collection.insert_one(
+            {
+                "firstname":self.firstname,
+                "lastname": self.lastname,
+                "username": self.username,
+                "email": self.email,
+                "password": self.password,
+                "course":self.course,
+                "created_on":self.created_on,
+                "is_tutor": self.is_tutor
+            }
+        )
+    
+    # get tutor by id
+
+    @staticmethod
+    def get_tutor(id):
+        return tutor_collection.find_one({
+            "_id": ObjectId(id)
+        })
+
+# update tutor
+    @staticmethod 
+    def update_tutor(id, firstname, lastname, username, email, password):
+        tutor_collection.update_one({"_id": ObjectId(id)}, {"$set":{"firstname":firstname, "lastname":lastname,"email":email, "username":username,"password":password, "address":address, "phonenumber":phonenumber,"gender":gender, "dob":dob}})
+
+# delete tutor
+    @staticmethod
+    def delete_tutor(id):
+        tutor_collection.delete_one({"_id": ObjectId(id)})
+    
+#get all tutors
+@staticmethod
+def get_all_tutors():
+    results = tutor_collection.find()
+    return list(results)
+
+
+
 # courses
 class available_courses:
     def __init__(self, author, title, slug):

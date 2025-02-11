@@ -1,57 +1,217 @@
+
 from django.shortcuts import render, redirect,HttpResponse
 from .forms import UserForm
 from pymongo import MongoClient
-from rest_framework.views import APIView, api_view
+from rest_framework.decorators import  api_view, permission_classes
+from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate
+from django.http import JsonResponse
 import jwt
+import bcrypt
 from rest_framework import status
 from django.conf import settings
 from datetime import datetime, timedelta
-from .serializers import (Studentregister)
-from .models import (Student, available_courses, live_classes, student_attendance, announcements, assignments,
-course_timetables, exam_timetables)
+from .serializers import (Studentregister,Tutorregister,Adminregister,Affiliateregister)
+from .models import (Student, available_courses, live_classes, student_attendance, anouncements, assignments,
+course_timetables, exam_timetables,Tutor,Admin, affiliate)
 import hashlib # for hashing password
 from .mongo import db
+affiliate_collection = db["affiliate"]
 student_collection = db["student"]
+Tutor_collection = db["tutor"]
 available_courses_collection = db['available_courses']
 live_classes_collection = db['live_classes']
 student_attendance_collection = db['student_attendance']
 announcements_collection = db['announcements']
 assignments_collection = db['assignments']
 course_timetables_collection = db['course_timetables']
-#Student CRUD
-#Student  register
-class RegisterView(APIView):
-    PERMISSION_CLASSES = [AllowAny]
+admin_collection = db["admin"]
+import requests
+from bs4 import BeautifulSoup
+from django.shortcuts import render
 
-    def post(self, request):
-       serializer = Studentregister(data = request.data)
-       if serializer.is_valid():
-          firstname = serializer.validated_data["firstname"]
-          lastname = serializer.validated_data["lastname"]
-          email = serializer.validated_data["email"]
-          password = serializer.validated_data["password"]
-          username = serializer.validated_data["username"]
-          address = serializer.validated_data["address"]
-          dob = serializer.validated_data["dob"]
-          course = serializer.validated_data["course"]
-          phonenumber = serializer.validated_data["phonenumber"]
-          gender = serializer.validated_data["gender"]
+def scrape_view(request):
+    url = "https://best9ja.com.ng/how-to-upload/"  # Change to the target URL
+    headers = {"User-Agent": "Mozilla/5.0"}
+    
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Extract relevant data (modify as needed)
+        titles = soup.find_all("h2")  # Example: Extracting all h2 tags
+        
+        extracted_data = [title.get_text() for title in titles]
+
+        return render(request, "data.html", {"datain": extracted_data})
+
+    return render(request, "data.html", {"data": ["Failed to retrieve data"]})
+# hash password with bcrypt
+
+
+def hash_password(password):
+    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+#Admin CRUD
+#Admin  register
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def RegisterAdmin( request):
+    serializer = Adminregister(data = request.data)
+    if serializer.is_valid():
+       firstname = serializer.validated_data["firstname"]
+       lastname = serializer.validated_data["lastname"]
+       email = serializer.validated_data["email"]
+       password = serializer.validated_data["password"]
+       hashed_password = hash_password(password) #hash password before saving using the bcrypt hashing function
+       username = serializer.validated_data["username"]
+       address = serializer.validated_data["address"]
+       dob = serializer.validated_data["dob"]
+       course = serializer.validated_data["course"]
+       phonenumber = serializer.validated_data["phonenumber"]
+       gender = serializer.validated_data["gender"]
+        # check if the Admin exist
+        
+       if admin_collection.find_one({"username":username}) or student_collection.find_one({"username":username}) or affiliate_collection.find_one({"username":username}) or Tutor_collection.find_one({"username":username}):
+          return Response ("User already exist use unique username and email", status = status.HTTP_400_BAD_REQUEST)
+       studentreg = Admin(firstname=firstname, lastname=lastname, username=username, email=email, password=hashed_password,course=course,address=address,dob=dob,phonenumber=phonenumber,gender=gender)
+       studentreg.save()
+       return Response({"message": "AdminRegistered Succesfully"},status = status.HTTP_201_CREATED)   
+    return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)                    
+
+# get all Admin
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_admin_list(request):
+    if request.method == "POST":
+        get_admin = Admin.get_all_admin()
+        return Response(get_admin, status = status.HTTP_200_OK)
+    return Response( status = status.HTTP_400_BAD_REQUEST)
+
+# update admin
+@permission_classes([IsAdminUser])
+@api_view(["POST"])
+def update_adminview(request, id):
+    if request.method == "POST":
+        firstname = serializer.validated_data["firstname"]
+        lastname = serializer.validated_data["lastname"]
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
+        username = serializer.validated_data["username"]
+        address = serializer.validated_data["address"]
+        dob = serializer.validated_data["dob"]
+        course = serializer.validated_data["course"]
+        phonenumber = serializer.validated_data["phonenumber"]
+        gender = serializer.validated_data["gender"]  
+
+        Admin.update_admin(id,firstname, lastname, username, email, password,course,address,dob,phonenumber,gender)
+        return Response({"message": "Admin Updated"}, status = status.HTTP_200_OK)
+#delete student
+@permission_classes([IsAdminUser])
+@api_view(["DELETE"])
+def delete_adminview(request, id):
+    if request.method == "DELETE":
+       Admin.delete_admin(id)
+       return Response({"message":"Admin deleted"}, status = status.HTTP_200_OK)
+    return Response({"error":"Only delete method allowed here please"}, status = status.HTTP_400_BAD_REQUEST)
+
+
+#Affiliate CRUD
+#Affiliate  register
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def RegisterAffiliate(request):
+    serializer = Affiliateregister(data = request.data)
+    if serializer.is_valid():
+       firstname = serializer.validated_data["firstname"]
+       lastname = serializer.validated_data["lastname"]
+       email = serializer.validated_data["email"]
+       password = serializer.validated_data["password"]
+       username = serializer.validated_data["username"]
+       address = serializer.validated_data["address"]
+       dob = serializer.validated_data["dob"]
+       course = serializer.validated_data["course"]
+       phonenumber = serializer.validated_data["phonenumber"]
+       gender = serializer.validated_data["gender"]
+       hashed_password = hash_password(password) #hash password before saving using the bcrypt hashing function
+        # check if the Affiliate exist
+       if admin_collection.find_one({"username":username}) or student_collection.find_one({"username":username}) or affiliate_collection.find_one({"username":username}) or Tutor_collection.find_one({"username":username}):
+          return Response ("User already exist use unique username and email", status = status.HTTP_400_BAD_REQUEST)
+      
+       affiliatereg = affiliate(firstname=firstname, lastname=lastname, username=username, email=email, password=hashed_password,course=course,address=address,dob=dob,phonenumber=phonenumber,gender=gender)
+       affiliatereg.save()
+       return Response({"message":"Affiliate Created Successfully"},status = status.HTTP_201_CREATED)   
+    return Response(serializer.errors,status = status.HTTP_400_BAD_REQUEST)                    
+
+# get all Affiliate
+@permission_classes([IsAdminUser])
+@api_view(["GET"])
+def get_affiliate_list(request):
+    if request.method == "POST":
+        get_affiliate = affiliate.get_all_affiliate()
+        return Response(get_affiliate, status = status.HTTP_200_OK)
+    return Response( status = status.HTTP_400_BAD_REQUEST)
+
+# update affiliate
+@permission_classes([IsAdminUser])
+@api_view(["POST"])
+def update_affiliateview(request, id):
+    if request.method == "POST":
+        firstname = serializer.validated_data["firstname"]
+        lastname = serializer.validated_data["lastname"]
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
+        username = serializer.validated_data["username"]
+        address = serializer.validated_data["address"]
+        dob = serializer.validated_data["dob"]
+        course = serializer.validated_data["course"]
+        phonenumber = serializer.validated_data["phonenumber"]
+        gender = serializer.validated_data["gender"]  
+        affiliate.update_affiliate(id,firstname, lastname, username, email, password,course,address,dob,phonenumber,gender)
+        return Response({"message": "Affiliate Updated"}, status = status.HTTP_200_OK)
+#delete affiliate
+@permission_classes([IsAdminUser])
+@api_view(["DELETE"])
+def delete_affiliateview(request, id):
+    if request.method == "DELETE":
+       affiliate.delete_affiliate(id)
+       return Response({"message":"affiliate deleted"}, status = status.HTTP_200_OK)
+    return Response({"error":"Only delete method allowed here please"}, status = status.HTTP_400_BAD_REQUEST)
+
+
+
+#Student CRUD
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def RegisterView( request):
+    serializer = Studentregister(data = request.data)
+    if serializer.is_valid():
+        firstname = serializer.validated_data["firstname"]
+        lastname = serializer.validated_data["lastname"]
+        email = serializer.validated_data["email"]
+        username = serializer.validated_data["username"]
+        address = serializer.validated_data["address"]
+        dob = serializer.validated_data["dob"]
+        course = serializer.validated_data["course"]
+        phonenumber = serializer.validated_data["phonenumber"]
+        gender = serializer.validated_data["gender"]
+        password = serializer.validated_data["password"]
+        hashed_password = hash_password(password) #hash password before saving using the bcrypt hashing function
         # check if the user exist
-          student_collection = db["student"]
-          if users_collection.find_one({"username":username}):
-             return Response ("user already exist", status = status.HTTP_400_BAD_REQUEST)
-          password = hashlib.sha256(password.encode()).hexdigest() #hash password before saving
-          
-          studentreg = Student(firstname, lastname, username, email, password,course,address,dob,phonenumber,gender)
-          studentreg.save()
-          return Response(status = status.HTTP_201_CREATED)   
-       return Response(status = status.HTTP_400_BAD_REQUEST)                    
+        
+        if admin_collection.find_one({"username":username}) or student_collection.find_one({"username":username}) or affiliate_collection.find_one({"username":username}) | Tutor_collection.find_one({"username":username}):
+          return Response ("User already exist use unique username and email", status = status.HTTP_400_BAD_REQUEST)
+        studentreg = Student(firstname=firstname, lastname=lastname, username=username, email=email, password=hashed_password,course=course,address=address,dob=dob,phonenumber=phonenumber,gender=gender)
+        studentreg.save()
+        return Response({"message": "Student registered successfully!"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                   
 
 # get all students
-@PERMISSION_CLASSES([IsAdminUser])
+@permission_classes([IsAdminUser])
 @api_view(["GET"])
 def get_students_list(request):
     if request.method == "POST":
@@ -60,7 +220,7 @@ def get_students_list(request):
     return Response( status = status.HTTP_400_BAD_REQUEST)
 
 # update student
-@PERMISSION_CLASSES([IsAdminUser])
+@permission_classes([IsAdminUser])
 @api_view(["POST"])
 def update_student(request, id):
     if request.method == "POST":
@@ -78,7 +238,7 @@ def update_student(request, id):
         Student.update_student(id,firstname, lastname, username, email, password,course,address,dob,phonenumber,gender)
         return Response({"message": "Student Updated"}, status = status.HTTP_200_OK)
 #delete student
-@PERMISSION_CLASSES([IsAdminUser])
+@permission_classes([IsAdminUser])
 @api_view(["DELETE"])
 def delete_student(request, id):
     if request.method == "DELETE":
@@ -86,25 +246,99 @@ def delete_student(request, id):
        return Response({"message":"student deleted"}, status = status.HTTP_200_OK)
     return Response({"error":"Only delete method allowed here please"}, status = status.HTTP_400_BAD_REQUEST)
 
-class LoginView(APIView):
-    PERMISSION_CLASSES = [AllowAny]# allow anybody to login
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
+#CRUD Tutors
 
-        # now authenticate the user 
-        user = student_collection.find(request, username= username, password = password )
-        if user is None:
-            return Response({"error: invalid credentials"}, status = status.HTTP_400_BAD_REQUEST)
-        #create data to encode
-        payload = {
-            "user_id": str(user.id),
-            "exp": datetime.utcnow() + timedelta(hours=1),
-            "iat": datetime.utcnow(),
-        }
-        #encode
-        token = jwt.encode(payload, settings.SECRET_KEY)
-        return Response({"token":token}, status = 200 )
+#Tutor  register
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def RegisterTutor(request):
+    serializer = Tutorregister(data = request.data)
+    if serializer.is_valid():
+       firstname = serializer.validated_data["firstname"]
+       lastname = serializer.validated_data["lastname"]
+       email = serializer.validated_data["email"]
+       password = serializer.validated_data["password"]
+       hashed_password = hash_password(password) #hash password before saving using the bcrypt hashing function
+       username = serializer.validated_data["username"]
+       address = serializer.validated_data["address"]
+       dob = serializer.validated_data["dob"]
+       course = serializer.validated_data["course"]
+       phonenumber = serializer.validated_data["phonenumber"]
+       gender = serializer.validated_data["gender"]
+        # check if the user exist
+       if admin_collection.find_one({"username":username}) or student_collection.find_one({"username":username}) or affiliate_collection.find_one({"username":username}) or Tutor_collection.find_one({"username":username}):
+          return Response ("User already exist use unique username and email", status = status.HTTP_400_BAD_REQUEST)
+       tutorreg = Tutor(firstname=firstname, lastname=lastname, username=username, email=email, password=hashed_password,course=course,address=address,dob=dob,phonenumber=phonenumber,gender=gender)
+       tutorreg.save()
+       return Response({"message":"Tutor created succesfully"},status = status.HTTP_201_CREATED)   
+    return Response(serializer.errors,status = status.HTTP_400_BAD_REQUEST)                    
+
+# get all Tutors
+@permission_classes([IsAdminUser])
+@api_view(["GET"])
+def get_tutors_list(request):
+    if request.method == "POST":
+        get_tutor = Tutor.get_all_tutors()
+        return Response(get_tutor, status = status.HTTP_200_OK)
+    return Response( status = status.HTTP_400_BAD_REQUEST)
+
+# update tutor
+@permission_classes([IsAdminUser])
+@api_view(["POST"])
+def update_tutorview(request, id):
+    if request.method == "POST":
+        firstname = serializer.validated_data["firstname"]
+        lastname = serializer.validated_data["lastname"]
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
+        username = serializer.validated_data["username"]
+        address = serializer.validated_data["address"]
+        dob = serializer.validated_data["dob"]
+        course = serializer.validated_data["course"]
+        phonenumber = serializer.validated_data["phonenumber"]
+        gender = serializer.validated_data["gender"]  
+
+        Tutor.update_tutor(id,firstname, lastname, username, email, password,course,address,dob,phonenumber,gender)
+        return Response({"message": "Tutor Updated"}, status = status.HTTP_200_OK)
+
+#delete tutor
+@permission_classes([IsAdminUser])
+@api_view(["DELETE"])
+def delete_tutorview(request, id):
+    if request.method == "DELETE":
+       tutor.delete_tutor(id)
+       return Response({"message":"Tutor deleted"}, status = status.HTTP_200_OK)
+    return Response({"error":"Only delete method allowed here please"}, status = status.HTTP_400_BAD_REQUEST)
+
+
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def login_view(request):
+    username = request.data.get("username")
+    password = request.data.get("password")
+
+    # auth by email user by email
+    user = student_collection.find_one({"username": username}) or admin_collection.find_one({"username": username}) or affiliate_collection.find_one({"username": username}) or tutor_collection.find_one({"username": username})
+    if not user:
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
+
+    # Check password
+    if not bcrypt.checkpw(password.encode("utf-8"), user["password"].encode("utf-8")):
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
+
+   
+    payload = {
+        "user_id": str(user["_id"]),  
+        "exp": datetime.utcnow() + timedelta(hours= 1),
+        "iat": datetime.utcnow(),
+    }
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+    return JsonResponse({"token": token})
+
+
 
 #CRUD COURSES
 @permission_classes([IsAdminUser])
@@ -244,7 +478,7 @@ def create_anouncements(request):
         tutor = request.data.get("tutor")
         title = request.data.get("title")
         content = request.data.get("content")
-        savingdata = anouncement(tutor, title, content)
+        savingdata = anouncements(tutor, title, content)
         savingdata.save()
         return Response({"message": "ANOUNCEMENT CREATED"},status = status.HTTP_201_CREATED)
     return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
@@ -255,7 +489,7 @@ def create_anouncements(request):
 @api_view(["GET"])
 def view_single_anouncement(request, id):
     if request.method =="GET":
-        results = announcements.view_anouncement(id)
+        results = anouncements.view_anouncement(id)
         return Response(results,status = status.HTTP_200_OK)
     return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
 
@@ -268,8 +502,8 @@ def update_anouncements(request, id):
         tutor = request.data.get("tutor")
         title = request.data.get("title")
         content = request.data.get("content")
-        savingdata = anouncement.update_anouncement(id, tutor, title, content)
-        return Response({"message": "anouncements Updated"}status = status.HTTP_200_OK)
+        savingdata = anouncements.update_anouncement(id, tutor, title, content)
+        return Response({"message": "anouncements Updated"},status = status.HTTP_200_OK)
     return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
 
 # delete Anouncement
@@ -277,8 +511,8 @@ def update_anouncements(request, id):
 @api_view(["DELETE"])
 def delete_anouncements(request, id):
     if request.method =="DELETE":
-       anouncement.delete_anouncement(id)
-       return Response({"message": "anouncements deleted"}status = status.HTTP_200_OK)
+       anouncements.delete_anouncement(id)
+       return Response({"message": "anouncements deleted"},status = status.HTTP_200_OK)
     return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
 
 #CRUD Assignments
@@ -292,7 +526,7 @@ def create_class_assignment(request):
         content = request.data.get("content")
         savingdata = assignments(tutor, title, content)
         savingdata.save()
-        return Response({"message": "assignment created"}status = status.HTTP_201_CREATED)
+        return Response({"message": "assignment created"},status = status.HTTP_201_CREATED)
     return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
 
 # view assignment by id
@@ -401,7 +635,7 @@ def view_exam_timetable(request, id):
 @api_view(["PUT"])
 def update_exam_timetable(request, id):
     if request.method =="PUT":
-         title = request.data.get("title")
+        title = request.data.get("title")
         course = request.data.get("course")
         class_link = request.data.get("class_link")
         savingdata = exam_timetables.update_exam_time_table(id, title, course,class_link) 

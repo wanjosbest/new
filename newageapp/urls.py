@@ -1,20 +1,34 @@
 from django.urls import path
 from .import views
-from newageapp.views import RegisterView,LoginView
 
 urlpatterns =[
-     # CRUD STUDENTS ENDPOINTS
-     path("api/register-student/", RegisterView.as_view(), name="register_student"),
+    
+     path("news/",views.scrape_view, name="news"),
+        # CRUD STUDENTS ENDPOINTS
+     path("api/register-student/", views.RegisterView, name="register_student"),
      path("api/view-all-students/", views.get_students_list, name="get_all_students"),
      path("api/delete-student/<int:id>/", views.delete_student, name="delete_student"),
      path("api/update-student/<int:id>/", views.update_student, name="update_student"),
-     
+     # CRUD ADMIN ENDPOINTS
+     path("api/register-admin/", views.RegisterAdmin, name="register_admin"),
+     path("api/view-all-admin/", views.get_admin_list, name="get_all_students"),
+     path("api/delete-admin/<int:id>/", views.delete_adminview, name="delete_admin"),
+     path("api/update-admin/<int:id>/", views.update_adminview, name="update_admin"),
+     # CRUD AFFILIATE ENDPOINTS
+     path("api/register-affiliate/", views.RegisterAffiliate, name="register_affilite"),
+     path("api/view-all-affiliate/", views.get_affiliate_list, name="get_all_affilite"),
+     path("api/delete-affiliate/<int:id>/", views.delete_affiliateview, name="delete_affilite"),
+     path("api/update-affiliate/<int:id>/", views.update_affiliateview, name="update_affilite"),
+     # CRUD TUTORS ENDPOINTS
+     path("api/register-tutor/", views.RegisterTutor, name="register_tutor"),
+     path("api/view-all-tutors/", views.get_tutors_list, name="get_all_tutor"),
+     path("api/delete-tutor/<int:id>/", views.delete_tutorview, name="delete_tutor"),
+     path("api/update-tutor/<int:id>/", views.update_tutorview, name="update_tutor"),
      #CRUD COURSES ENDPOINTS
      path("api/create-course/", views.create_course, name="create_course"),
      path("api/view-all-courses/", views.view_courses, name="view_courses"),
      path("api/update-course/<int:id>/",views.update_course, name="update_course"),
      path("api/delete-course/<int:id>/", views.delete_course, name="delete_course"),
-
      # CRUD LIVE CLASS ENDPOINTS
      path("api/create-live-class/", views.create_live_class, name="create_live_class"),
      path("api/view-live-class/", views.view_live_class, name="view_live_class"),
@@ -46,6 +60,8 @@ urlpatterns =[
      path("api/update-exam-timetable/<int:id>/",views.update_exam_timetable, name="update_exam_timetable"),
      path("api/delete-exam-timetable/<int:id>/", views.delete_exam_timetable, name="delete_exam_timetable"),
      #LOGIN ENDPOINT
-     path("api/login-student/", LoginView.as_view(), name="login_student"),
+     path("api/login/", views.login_view, name="login"),  
     
 ]
+
+  

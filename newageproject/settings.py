@@ -58,18 +58,19 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-    'AUTHENTICATION_CLASSES': (
+    'AUTHENTICATION_CLASSES': [
         'newageapp.authentication.JWTauthentication',
         'rest_framework.authentication.SessionAuthentication',
-    ),
-      'PERMISSION_CLASSES': (
-
+    ]
+   
+     
+}
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated', 
         'rest_framework.permissions.IsAdminUser',
         'rest_framework.permissions.AllowAny',
-        'rest_framework.permissions.IsAuthenticated',
-
-   ),
-     
+    ]
 }
 
 ROOT_URLCONF = 'newageproject.urls'
