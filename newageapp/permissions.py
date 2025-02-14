@@ -2,16 +2,16 @@ from rest_framework.permissions import BasePermission
 
 class IsAdmin(BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == "admin"
+        return hasattr(request.user, "role") and request.user.role == "admin"
 
 class IsStudent(BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == "student"
+        return hasattr(request.user, "role") and request.user.role == "student"
 
 class IsTutor(BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == "tutor"
+        return hasattr(request.user, "role") and request.user.role == "tutor"
 
 class IsAffiliate(BasePermission):
     def has_permission(self, request, view):
-        return request.user.role == "affiliate"
+        return hasattr(request.user, "role") and request.user.role == "affiliate"
