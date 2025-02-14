@@ -323,7 +323,7 @@ def delete_tutorview(request, id):
 
 def get_tokens_for_user(user_id):
     """
-    Generate JWT tokens without requiring a Django user instance.
+    Generate JWT tokens 
     """
     refresh = RefreshToken()
     refresh["user_id"] = user_id  # Store user ID inside the token
