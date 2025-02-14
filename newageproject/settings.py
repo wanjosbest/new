@@ -58,13 +58,11 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
-    'AUTHENTICATION_CLASSES': [
-        'newageapp.authentication.JWTauthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ]
-   
-     
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
+
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated', 

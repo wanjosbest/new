@@ -1,11 +1,17 @@
 from .mongo import db
 from datetime import datetime
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+
 
 # define all the collections here
 student_collection = db["student"]
+users_collection = db["users"]
 tutor_collection = db["tutor"]
 admin_collection = db["admin"]
 affiliate_collection = db["affiliate"]
+affiliatewallect_collection = db["AffWallet"]
 available_courses_collection = db['available_courses']
 course_modules_collection = db['course_modules']
 live_classes_collection = db['live_classes']
@@ -20,11 +26,9 @@ referrals_collection = db['referrals']
 referral_trackers_collection = db['referral_trackers']
 promoted_courses_collection = db['promoted_courses']
 
-# Admin
 
-class Admin:
-    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
-
+class User:
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role):
         self.firstname = firstname
         self.lastname = lastname
         self.username = username
@@ -36,8 +40,15 @@ class Admin:
         self.phonenumber = phonenumber
         self.gender = gender
         self.created_on = datetime.now()
-        self.is_admin = True
+        self.role = role
+     
+# Admin
 
+class Admin(User):
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role=None):
+        super().__init__(firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role)
+        self.role = "admin"
+       
     def save(self):
         admin_collection.insert_one(
             {
@@ -47,8 +58,12 @@ class Admin:
                 "email": self.email,
                 "password": self.password,
                 "course":self.course,
+                "address": self.address,
+                "dob": self.dob,
+                "phonenumber":self.phonenumber,
+                "gender": self.gender,
                 "created_on":self.created_on,
-                "is_admin": self.is_admin
+                "role": self.role
             }
         )
     
@@ -79,21 +94,11 @@ def get_all_admin():
 
 # affiliate
 
-class affiliate:
-    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
-
-        self.firstname = firstname
-        self.lastname = lastname
-        self.username = username
-        self.email = email
-        self.password = password
-        self.course = course
-        self.address = address
-        self.dob = dob
-        self.phonenumber = phonenumber
-        self.gender = gender
-        self.created_on = datetime.now()
-        self.is_affiliate = True
+class affiliate(User):
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role= None):
+        super().__init__(firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role)
+        
+        self.role = "affiliate"
 
     def save(self):
         affiliate_collection.insert_one(
@@ -104,8 +109,12 @@ class affiliate:
                 "email": self.email,
                 "password": self.password,
                 "course":self.course,
+                "address": self.address,
+                "dob": self.dob,
+                "phonenumber":self.phonenumber,
+                "gender": self.gender,
                 "created_on":self.created_on,
-                "is_affiliate": self.is_affiliate
+                "role": self.role
             }
         )
     
@@ -133,32 +142,30 @@ def get_all_affiliate():
     results = affiliate_collection.find()
     return list(results)
 
-class Student:
-    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
-        self.firstname = firstname
-        self.lastname = lastname
-        self.username = username
-        self.email = email
-        self.password = password
-        self.course = course
-        self.address = address
-        self.dob = dob
-        self.phonenumber = phonenumber
-        self.gender = gender
-        self.created_on = datetime.now()
-        self.is_student = True
+
+
+
+class Student(User):
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role =None):
+        super().__init__(firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role)
+        self.role= "student"
 
     def save(self):
         student_collection.insert_one(
             {
-                "firstname":self.firstname,
+               "firstname":self.firstname,
                 "lastname": self.lastname,
                 "username": self.username,
                 "email": self.email,
                 "password": self.password,
                 "course":self.course,
+                "address": self.address,
+                "dob": self.dob,
+                "phonenumber":self.phonenumber,
+                "gender": self.gender,
                 "created_on":self.created_on,
-                "is_student": self.is_student
+                "role": self.role
+
             }
         )
     
@@ -187,32 +194,25 @@ def get_all_students():
     return list(results)
 
 class Tutor:
-    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender):
-
-        self.firstname = firstname
-        self.lastname = lastname
-        self.username = username
-        self.email = email
-        self.password = password
-        self.course = course
-        self.address = address
-        self.dob = dob
-        self.phonenumber = phonenumber
-        self.gender = gender
-        self.created_on = datetime.now()
-        self.is_tutor = True
+    def __init__(self, firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role=None):
+        super().__init__(firstname, lastname, username, email, password,course,address,dob,phonenumber,gender,role)
+        self.role= "tutor"
 
     def save(self):
         tutor_collection.insert_one(
             {
-                "firstname":self.firstname,
+               "firstname":self.firstname,
                 "lastname": self.lastname,
                 "username": self.username,
                 "email": self.email,
                 "password": self.password,
                 "course":self.course,
+                "address": self.address,
+                "dob": self.dob,
+                "phonenumber":self.phonenumber,
+                "gender": self.gender,
                 "created_on":self.created_on,
-                "is_tutor": self.is_tutor
+                "role": self.role
             }
         )
     
@@ -422,3 +422,26 @@ class exam_timetables:
     @staticmethod
     def delete_exam_timetable(id):
         exam_timetables_collection.delete_one({"_id":id})
+
+class AffiliateWallet:
+    def __init__(self, affiliate_id, balance):
+        self.affiliate_id = affiliate_id
+        self.balance = balance
+        self.date_created = datetime.now()
+
+        def save(self):
+           affiliatewallect_collection.insert_one({
+           "affiliate_id": self.affiliate_id,
+           "balance": self.balance
+        })
+
+        def get_all():
+            results = affiliatewallect_collection.find()
+            return list(results)
+
+        def get_by_id(affiliate_id):
+            results = affiliatewallect_collection.find_one({"affiliate_id":affiliate_id})
+            return (results)
+        def delete_wallet(username):
+            results = affiliatewallect_collection.delete_one({"username":username})
+          

@@ -61,6 +61,13 @@ urlpatterns =[
      path("api/delete-exam-timetable/<int:id>/", views.delete_exam_timetable, name="delete_exam_timetable"),
      #LOGIN ENDPOINT
      path("api/login/", views.login_view, name="login"),  
+
+     # CRUD AFFILIATE WALLET
+     path("api/create-wallet/", views.CreateAffiliateWallet, name="createaffiliatewallet"),
+     path("api/view-wallet/", views.ViewAffiliateWallet, name="viewaffiliatewallet"),
+     path("api/update-wallet/", views.UpdateAffiliateWallet, name="updateaffiliatewallet"),
+     path("api/delete-wallet/<username>/", views.DeleteAffiliateWallet, name="deleteaffiliatewallet"),
+
     
 ]
 
