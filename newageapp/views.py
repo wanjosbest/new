@@ -366,16 +366,15 @@ def login_view(request):
 @api_view(["POST"])
 @permission_classes([IsAdmin])
 def create_course(request):
-    if request.user.is_admin:
-       if request.method =="POST":
-          author = request.data.get("author")
-          title  = request.data.get("title")
-          slug   = request.data.get("slug")
-          savingdata = available_courses_collection(author, title, slug)
-          savingdata.save()
-          return Response({"message": "Course added"}, status = status.HTTP_201_CREATED)
-       return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
-    return Response({"message":"you are not authorized to create course"}, status = status.HTTP_401_BAD_UNAUTHORIZED)
+    if request.method =="POST":
+        author = request.data.get("author")
+        title  = request.data.get("title")
+        slug   = request.data.get("slug")
+        savingdata = available_courses_collection(author, title, slug)
+        savingdata.save()
+        return Response({"message": "Course added"}, status = status.HTTP_201_CREATED)
+    return Response({"error":"Bad request"}, status = status.HTTP_400_BAD_REQUEST)
+   
     
 
 #view all courses
