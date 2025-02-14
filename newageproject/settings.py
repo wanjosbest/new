@@ -60,7 +60,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'newageapp.auth_backend.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+      
     ),
 }
 
