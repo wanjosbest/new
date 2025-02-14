@@ -334,7 +334,7 @@ def get_tokens_for_user(user_id):
     }
 
 @api_view(["POST"])
-@permission_classes([IsAdmin,IsAffiliate,IsStudent,IsTutor])
+@permission_classes([AllowAny])
 def login_view(request):
     """
     Login Authentication with JWT
