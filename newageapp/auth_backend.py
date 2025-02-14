@@ -2,12 +2,19 @@ import jwt
 from django.conf import settings
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from pymongo import MongoClient
 
-# Connect to MongoDB
-client = MongoClient(settings.MONGO_URI)
-db = client.get_database("your_database_name")
-user_collection = db["users"]  # Adjust collection name
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+
+uri = "mongodb+srv://wanjos:0903620Wanjos@newagedatabase.40ybp.mongodb.net/?retryWrites=true&w=majority&appName=newagedatabase"
+
+# Create a new client and connect to the server
+client = MongoClient(uri, server_api=ServerApi('1'))
+db = client['newageadatabase']  # Database name
+affiliate_collection = db["affiliate"]
+student_collection = db["student"]
+tutor_collection = db["tutor"]
+admin_collection = db["admin"]
 
 class JWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
@@ -25,7 +32,7 @@ class JWTAuthentication(BaseAuthentication):
         except jwt.InvalidTokenError:
             raise AuthenticationFailed("Invalid token")
 
-        user_data = user_collection.find_one({"email": payload["email"]})  # Fetch user from MongoDB
+        user_data = admin_collection.find_one({"email": payload["email"]}) or affiliate_collection.find_one({"email": payload["email"]}) or student_collection.find_one({"email": payload["email"]}) or tutor_collection.find_one({"email": payload["email"]})
 
         if not user_data:
             raise AuthenticationFailed("User not found")

@@ -22,7 +22,7 @@ from .mongo import db
 from .permissions import IsAdmin, IsAffiliate, IsTutor,IsStudent
 affiliate_collection = db["affiliate"]
 student_collection = db["student"]
-Tutor_collection = db["tutor"]
+tutor_collection = db["tutor"]
 available_courses_collection = db['available_courses']
 live_classes_collection = db['live_classes']
 student_attendance_collection = db['student_attendance']
