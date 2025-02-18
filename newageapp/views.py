@@ -367,8 +367,6 @@ def login_view(request):
 @permission_classes([IsAdmin])
 def create_course(request):
     if request.method =="POST":
-        print("User:", request.user)  # Debugging user object
-        print("User Role:", getattr(request.user, "role", "No Role Found"))  # Debugging role
         author = request.data.get("author")
         title  = request.data.get("title")
         slug   = request.data.get("slug")

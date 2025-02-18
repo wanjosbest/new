@@ -44,7 +44,7 @@ class MongoUser:
         self.id = str(user_data["_id"])
         self.username = user_data["username"]
         self.email = user_data["email"]
-        self.role = user_data.get("role", "user")  # Default role
+        self.role = user_data.get("role", "admin") or user_data.get("role", "tutor") or user_data.get("role", "student") or user_data.get("role", "affiliate")
 
     @property
     def is_authenticated(self):
