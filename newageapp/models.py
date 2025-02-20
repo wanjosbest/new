@@ -435,7 +435,7 @@ class AffiliateWallet:
         def save(self):
            affiliatewallect_collection.insert_one({
            "affiliate_id": self.affiliate_id,
-           "balance": self.balance
+           "balance": self.balance,
            "referalnumber": self.number_of_referals
         })
 
