@@ -19,7 +19,7 @@ admin_collection = db["admin"]
 class JWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
         auth_header = request.headers.get("Authorization")
-
+ 
         if not auth_header or not auth_header.startswith("Bearer "):
             return None  # No authentication, return None
 
@@ -32,7 +32,7 @@ class JWTAuthentication(BaseAuthentication):
         except jwt.InvalidTokenError:
             raise AuthenticationFailed("Invalid token")
 
-        user_data = admin_collection.find_one({"email": payload["email"]}) or affiliate_collection.find_one({"email": payload["email"]}) or student_collection.find_one({"email": payload["email"]}) or tutor_collection.find_one({"email": payload["email"]})
+        user_data = admin_collection.find_one({"username": payload["username"]}) or affiliate_collection.find_one({"username": payload["username"]}) or student_collection.find_one({"username": payload["username"]}) or tutor_collection.find_one({"username": payload["username"]})
 
         if not user_data:
             raise AuthenticationFailed("User not found")
@@ -41,11 +41,12 @@ class JWTAuthentication(BaseAuthentication):
 
 class MongoUser:
     def __init__(self, user_data):
+        Role = user_data["role"]
         self.id = str(user_data["_id"])
         self.username = user_data["username"]
         self.email = user_data["email"]
-        self.role = user_data.get("role", "admin") or user_data.get("role", "tutor") or user_data.get("role", "student") or user_data.get("role", "affiliate")
-
+        # self.role = user_data.get("role", "admin") or user_data.get("role", "tutor") or user_data.get("role", "student") or user_data.get("role", "affiliate")
+        self.role = user_data["role"]
     @property
     def is_authenticated(self):
         return True  # Mark user as authenticated

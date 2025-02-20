@@ -15,7 +15,7 @@ from django.conf import settings
 from datetime import datetime, timedelta
 from .serializers import (Studentregister,Tutorregister,Adminregister,Affiliateregister, AffiliateWalletSerializer)
 from .models import (Student, Admin, Tutor, affiliate, available_courses, live_classes, student_attendance, anouncements, assignments,
-course_timetables, exam_timetables, AffiliateWallet)
+course_timetables, exam_timetables, AffiliateWallet, referal_count)
 import hashlib # for hashing password
 from django.contrib.auth.models import User
 from .mongo import db
@@ -31,6 +31,7 @@ assignments_collection = db['assignments']
 course_timetables_collection = db['course_timetables']
 admin_collection = db["admin"]
 users_collection = db["USERS"]
+referal_count_collection = db["referals"]
 import requests
 from bs4 import BeautifulSoup
 from django.shortcuts import render
@@ -717,6 +718,47 @@ def DeleteAffiliateWallet(request,username):
        AffiliateWallet.delete_wallet(username)
        return Response({"message":"Wallet delete"},status = status.HTTP_200_OK)
     return Response({"message":"Use DELETE request only please"}, status = status.HTTP_400_BAD_REQUEST)
+
+def refercount(request,affiliate_id):
+    get_the_referer = affiliatewallect_collection.find_one({"affiliate_id":affiliate_id})
+    incre = get_the_referer.referalnumber
+    getaffiliatebalance = get_the_referer.balance
+    incre2 = incre + 1
+    increasebalance = getaffiliatebalance + 500
+    saving = AffiliateWallet(referalnumber = incre2, balance=increasebalance)
+    return list(saving)
+
+#register through referal link
+@permission_classes([AllowAny])
+@api_view(["POST"])
+def affiliatereglink(request, affiliate_id):
+    if username in affiliate_collection.find_one({"username"})
+       serializer = Studentregister(data = request.data)
+       if serializer.is_valid():
+          firstname = serializer.validated_data["firstname"]
+          lastname = serializer.validated_data["lastname"]
+          email = serializer.validated_data["email"]
+          username = serializer.validated_data["username"]
+          address = serializer.validated_data["address"]
+          dob = serializer.validated_data["dob"]
+          course = serializer.validated_data["course"]
+          phonenumber = serializer.validated_data["phonenumber"]
+          gender = serializer.validated_data["gender"]
+          password = serializer.validated_data["password"]
+          hashed_password = hash_password(password) #hash password before saving using the bcrypt hashing function
+          # check if the user exist
+        
+          if admin_collection.find_one({"username":username}) or student_collection.find_one({"username":username}) or affiliate_collection.find_one({"username":username}) or Tutor_collection.find_one({"username":username}):
+            return Response ("User already exist use unique username and email", status = status.HTTP_400_BAD_REQUEST)
+          studentreg = Student(firstname=firstname, lastname=lastname, username=username, email=email, password=hashed_password,course=course,address=address,dob=dob,phonenumber=phonenumber,gender=gender)
+          studentreg.save()
+          #add 1 referal to the referer
+          refercount()
+          return Response({"message": "Student registered successfully!"}, status=status.HTTP_201_CREATED)
+       return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({"message":"Referal Link not Correct"}, status = status.HTTP_400_BAD_REQUEST)
+    
+
 
             
        

@@ -25,6 +25,7 @@ transactions_collection = db['transactions']
 referrals_collection = db['referrals']
 referral_trackers_collection = db['referral_trackers']
 promoted_courses_collection = db['promoted_courses']
+referal_count_collection = db["referals"]
 
 
 class User:
@@ -424,15 +425,18 @@ class exam_timetables:
         exam_timetables_collection.delete_one({"_id":id})
 
 class AffiliateWallet:
-    def __init__(self, affiliate_id, balance):
+    def __init__(self, affiliate_id, balance = None, number_of_referals = None):
         self.affiliate_id = affiliate_id
-        self.balance = balance
+        self.balance = 0
         self.date_created = datetime.now()
+        self.number_of_referals = 0
+        
 
         def save(self):
            affiliatewallect_collection.insert_one({
            "affiliate_id": self.affiliate_id,
            "balance": self.balance
+           "referalnumber": self.number_of_referals
         })
 
         def get_all():
@@ -443,5 +447,8 @@ class AffiliateWallet:
             results = affiliatewallect_collection.find_one({"affiliate_id":affiliate_id})
             return (results)
         def delete_wallet(username):
-            results = affiliatewallect_collection.delete_one({"username":username})
-          
+            results = affiliatewallect_collection.delete_one({"username":username}) 
+
+
+       
+

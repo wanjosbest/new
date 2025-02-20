@@ -67,8 +67,9 @@ urlpatterns =[
      path("api/view-wallet/", views.ViewAffiliateWallet, name="viewaffiliatewallet"),
      path("api/update-wallet/", views.UpdateAffiliateWallet, name="updateaffiliatewallet"),
      path("api/delete-wallet/<username>/", views.DeleteAffiliateWallet, name="deleteaffiliatewallet"),
-
-    
+   
+     #AFFILIATEREG LINK
+     path("register/student/<affiliate_id>/", views.affiliatereglink, name="affiliatereglink"),
 ]
 
   
